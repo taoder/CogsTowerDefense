@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace ClogTowerDefense.Grid
+namespace CogsTowerDefense.Grid
 {
     /// <summary>
     /// Représente des coordonnées hexagonales en système axial (q, r)

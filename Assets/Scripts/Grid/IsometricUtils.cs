@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace ClogTowerDefense.Grid
+namespace CogsTowerDefense.Grid
 {
     /// <summary>
     /// Utilitaires pour la conversion entre coordonnées hexagonales et position monde isométrique

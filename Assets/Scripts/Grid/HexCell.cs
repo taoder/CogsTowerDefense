@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace ClogTowerDefense.Grid
+namespace CogsTowerDefense.Grid
 {
     /// <summary>
     /// Représente une cellule individuelle de la grille hexagonale

@@ -1,4 +1,4 @@
-# 🏗️ Architecture Technique - Clog Tower Defense
+# 🏗️ Architecture Technique - Cogs Tower Defense
 
 ## 📁 Structure des Dossiers Unity
 

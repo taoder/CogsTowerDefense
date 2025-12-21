@@ -2,7 +2,7 @@
 
 ## Vue d'ensemble
 
-Ce système implémente une grille hexagonale avec rendu isométrique pour Clog Tower Defense.
+Ce système implémente une grille hexagonale avec rendu isométrique pour Cogs Tower Defense.
 
 ## Composants
 

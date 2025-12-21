@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace ClogTowerDefense.Grid
+namespace CogsTowerDefense.Grid
 {
     /// <summary>
     /// Rend visuellement la grille hexagonale avec des LineRenderers ou sprites

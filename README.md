@@ -1,10 +1,10 @@
-# 🎮 Clog Tower Defense
+# 🎮 Cogs Tower Defense
 
 Un jeu de tower defense unique où vous construisez des chaînes de rouages pour produire des unités qui défendent contre les vagues de monstres.
 
 ## 📖 Concept
 
-**Clog Tower Defense** combine mécanique de production et tower defense :
+**Cogs Tower Defense** combine mécanique de production et tower defense :
 
 ### Phase 1 : Construction
 - Placez des rouages sur une grille hexagonale isométrique
@@ -122,7 +122,7 @@ Assets/
 1. Clonez le repository
 ```bash
 git clone <repository-url>
-cd ClogTowerDefense
+cd CogsTowerDefense
 ```
 
 2. Ouvrez le projet dans Unity

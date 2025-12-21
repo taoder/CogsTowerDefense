@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace ClogTowerDefense.Grid
+namespace CogsTowerDefense.Grid
 {
     /// <summary>
     /// Script de test pour la grille hexagonale
