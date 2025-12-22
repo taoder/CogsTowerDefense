@@ -1,0 +1,86 @@
+===============================================
+CONFIGURATION DU SYSTÈME DE DRAG & DROP
+===============================================
+
+Le système de drag & drop est maintenant prêt ! Voici comment le configurer dans Unity :
+
+## 1. COMPOSANT CogDragAndDrop (Déjà ajouté à la scène)
+✓ GameObject "CogDragAndDrop" existe dans la scène CogTest
+✓ Références déjà configurées :
+  - CogChain
+  - Main Camera
+
+## 2. SCRIPTABLEOBJECTS (Déjà créés)
+✓ Assets/ScriptableObjects/Cogs/SmallMeleeCog.asset
+✓ Assets/ScriptableObjects/Cogs/MediumRangedCog.asset
+✓ Assets/ScriptableObjects/Cogs/LargeHeroCog.asset
+
+## 3. POUR TESTER RAPIDEMENT
+
+### Option A: Test manuel dans la scène
+1. Ouvrir la scène CogTest dans Unity
+2. Lancer le Play mode
+3. Cliquer sur un rouage existant et le déplacer avec la souris
+4. Clic droit pour annuler
+5. Observer le cercle vert (valide) ou rouge (invalide)
+
+### Option B: Ajouter l'UI avec boutons (Recommandé)
+1. Dans la scène CogTest, créer :
+   - GameObject > UI > Canvas (si pas déjà présent)
+   - Ajouter EventSystem (créé automatiquement avec Canvas)
+
+2. Sous le Canvas, créer un panel pour les boutons :
+   - GameObject > UI > Panel
+   - Le nommer "CogButtons"
+   - Le positionner en bas de l'écran
+
+3. Ajouter 3 boutons au panel :
+   - Button 1: "Small Cog" (bleu)
+   - Button 2: "Medium Cog" (vert)
+   - Button 3: "Large Cog" (doré)
+
+4. Sur le panel "CogButtons", ajouter le composant CogDragTestUI :
+   - Drag & drop le script Assets/Scripts/UI/CogDragTestUI.cs
+   - Assigner les références :
+     * Drag System: GameObject "CogDragAndDrop"
+     * Small Melee Cog: SmallMeleeCog.asset
+     * Medium Ranged Cog: MediumRangedCog.asset
+     * Large Hero Cog: LargeHeroCog.asset
+     * Small Cog Button: Button "Small Cog"
+     * Medium Cog Button: Button "Medium Cog"
+     * Large Cog Button: Button "Large Cog"
+
+5. Lancer le Play mode et cliquer sur les boutons !
+
+## 4. FONCTIONNALITÉS
+
+✓ Placement de nouveaux rouages :
+  - Cliquer sur un bouton UI
+  - Déplacer la souris pour voir le preview circulaire
+  - Cliquer gauche pour placer (si vert)
+  - Clic droit pour annuler
+
+✓ Déplacement de rouages existants :
+  - Cliquer sur un rouage existant
+  - Le déplacer avec la souris
+  - Cliquer gauche pour placer à la nouvelle position (si valide)
+  - Clic droit pour annuler et revenir à la position d'origine
+
+✓ Validation en temps réel :
+  - Cercle VERT : placement valide (touche moteur/rouage, pas de collision, puissance suffisante)
+  - Cercle ROUGE : placement invalide
+
+## 5. RÈGLES DE PLACEMENT
+
+✓ Un rouage doit toucher le moteur OU un autre rouage connecté
+✓ Les rouages ne peuvent pas se chevaucher
+✓ Il faut assez de puissance disponible dans le moteur
+✓ Tolérance de contact : 0.1 unité
+
+## 6. TAILLES DES ROUAGES
+
+- Small (rayon 0.5) : Rouages basiques, peu coûteux en puissance
+- Medium (rayon 1.0) : 2x plus grand, unités à distance
+- Large (rayon 1.8) : 3.6x plus grand, produit des héros, très gourmand en puissance
+
+===============================================

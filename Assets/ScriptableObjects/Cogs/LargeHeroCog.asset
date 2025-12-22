@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5087ac6972684bf7b3c45f2782fde701, type: 3}
+  m_Name: LargeHeroCog
+  m_EditorClassIdentifier:
+  cogName: Large Hero Cog
+  size: 3
+  unitType: 2
+  placementCost: 250
+  upgradeCostBase: 100
+  upgradeCostMultiplier: 1.5
+  baseRotationsRequired: 30
+  productionSpeedPerLevel: 0.01
+  basePowerRequired: 4
+  prefab: {fileID: 0}
+  icon: {fileID: 0}
+  cogColor: {r: 1, g: 0.84, b: 0, a: 1}
+  description: Un tres grand rouage qui produit des unites heros puissantes. Prend beaucoup de place!
