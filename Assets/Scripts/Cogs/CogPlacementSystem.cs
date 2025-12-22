@@ -1,41 +1,34 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-using CogsTowerDefense.Grid;
 
 namespace CogsTowerDefense.Cogs
 {
     /// <summary>
-    /// Système de placement de rouages sur la grille hexagonale
+    /// Système de placement de rouages avec placement libre
+    /// Les rouages doivent se toucher physiquement pour se connecter
     /// </summary>
     public class CogPlacementSystem : MonoBehaviour
     {
         [Header("References")]
-        [SerializeField] private HexGrid hexGrid;
         [SerializeField] private CogChain cogChain;
         [SerializeField] private Camera mainCamera;
 
         [Header("Placement Settings")]
         [SerializeField] private CogData cogToPlace; // Le rouage actuellement sélectionné
-        [SerializeField] private LayerMask placementLayerMask;
 
         [Header("Visual Feedback")]
-        [SerializeField] private GameObject previewPrefab;
         [SerializeField] private Color validPlacementColor = new Color(0f, 1f, 0f, 0.5f);
         [SerializeField] private Color invalidPlacementColor = new Color(1f, 0f, 0f, 0.5f);
 
         // État interne
         private GameObject currentPreview;
-        private HexCell hoveredCell;
+        private Vector2 currentMouseWorldPos;
         private bool isPlacementMode = false;
         private bool canPlace = false;
+        private LineRenderer previewCircle;
 
         private void Awake()
         {
-            if (hexGrid == null)
-            {
-                hexGrid = FindFirstObjectByType<HexGrid>();
-            }
-
             if (cogChain == null)
             {
                 cogChain = FindFirstObjectByType<CogChain>();
@@ -59,24 +52,21 @@ namespace CogsTowerDefense.Cogs
         /// </summary>
         private void HandlePlacementInput()
         {
-            if (mainCamera == null || hexGrid == null || Mouse.current == null)
+            if (mainCamera == null || Mouse.current == null)
                 return;
 
             // Récupère la position de la souris
             Vector2 mousePos = Mouse.current.position.ReadValue();
             Vector3 worldPos = mainCamera.ScreenToWorldPoint(new Vector3(mousePos.x, mousePos.y, 0));
-            worldPos.z = 0;
-
-            // Récupère la cellule sous la souris
-            HexCell cell = hexGrid.GetCellAtWorldPosition(worldPos);
+            currentMouseWorldPos = new Vector2(worldPos.x, worldPos.y);
 
             // Update le preview
-            UpdatePreview(cell);
+            UpdatePreview();
 
             // Placement au clic
             if (Mouse.current.leftButton.wasPressedThisFrame && canPlace)
             {
-                PlaceCog(hoveredCell);
+                PlaceCog();
             }
 
             // Annulation au clic droit
@@ -89,40 +79,74 @@ namespace CogsTowerDefense.Cogs
         /// <summary>
         /// Met à jour le preview de placement
         /// </summary>
-        private void UpdatePreview(HexCell cell)
+        private void UpdatePreview()
         {
-            if (cell == hoveredCell) return;
-
-            hoveredCell = cell;
-
-            if (cell == null)
+            if (cogToPlace == null)
             {
                 HidePreview();
                 return;
             }
 
             // Vérifie si on peut placer ici
-            canPlace = CanPlaceAt(cell);
+            float cogRadius = GetRadiusForSize(cogToPlace.Size);
+            canPlace = CanPlaceAt(currentMouseWorldPos, cogRadius, cogToPlace.GetPowerRequired(1));
 
-            // Crée ou met à jour le preview
-            if (currentPreview == null && cogToPlace != null && cogToPlace.Prefab != null)
+            // Crée ou met à jour le cercle de preview
+            if (previewCircle == null)
             {
-                currentPreview = Instantiate(cogToPlace.Prefab, transform);
-
-                // Désactive les composants fonctionnels du preview
-                Cog cogComponent = currentPreview.GetComponent<Cog>();
-                if (cogComponent != null)
-                {
-                    cogComponent.enabled = false;
-                }
+                CreatePreviewCircle();
             }
 
-            if (currentPreview != null)
+            if (previewCircle != null)
             {
-                currentPreview.transform.position = cell.WorldPosition;
+                previewCircle.transform.position = currentMouseWorldPos;
+
+                // Met à jour le rayon du cercle
+                UpdatePreviewCircleRadius(cogRadius);
 
                 // Change la couleur selon la validité
-                SetPreviewColor(canPlace ? validPlacementColor : invalidPlacementColor);
+                Color color = canPlace ? validPlacementColor : invalidPlacementColor;
+                previewCircle.startColor = color;
+                previewCircle.endColor = color;
+
+                previewCircle.enabled = true;
+            }
+        }
+
+        /// <summary>
+        /// Crée le cercle de preview
+        /// </summary>
+        private void CreatePreviewCircle()
+        {
+            GameObject circleObj = new GameObject("PlacementPreviewCircle");
+            circleObj.transform.SetParent(transform);
+
+            previewCircle = circleObj.AddComponent<LineRenderer>();
+            previewCircle.useWorldSpace = false;
+            previewCircle.loop = true;
+            previewCircle.widthMultiplier = 0.05f;
+            previewCircle.positionCount = 64; // Nombre de segments pour un cercle lisse
+            previewCircle.material = new Material(Shader.Find("Sprites/Default"));
+            previewCircle.sortingOrder = 100;
+        }
+
+        /// <summary>
+        /// Met à jour le rayon du cercle de preview
+        /// </summary>
+        private void UpdatePreviewCircleRadius(float radius)
+        {
+            if (previewCircle == null) return;
+
+            int segments = previewCircle.positionCount;
+            for (int i = 0; i < segments; i++)
+            {
+                float angle = (float)i / segments * 2f * Mathf.PI;
+                Vector3 pos = new Vector3(
+                    Mathf.Cos(angle) * radius,
+                    Mathf.Sin(angle) * radius,
+                    0f
+                );
+                previewCircle.SetPosition(i, pos);
             }
         }
 
@@ -131,52 +155,39 @@ namespace CogsTowerDefense.Cogs
         /// </summary>
         private void HidePreview()
         {
-            if (currentPreview != null)
+            if (previewCircle != null)
             {
-                currentPreview.SetActive(false);
+                previewCircle.enabled = false;
             }
         }
 
         /// <summary>
-        /// Change la couleur du preview
+        /// Retourne le rayon pour une taille de rouage
         /// </summary>
-        private void SetPreviewColor(Color color)
+        private float GetRadiusForSize(CogSize size)
         {
-            if (currentPreview == null) return;
-
-            SpriteRenderer[] renderers = currentPreview.GetComponentsInChildren<SpriteRenderer>();
-            foreach (var renderer in renderers)
+            return size switch
             {
-                renderer.color = color;
-            }
+                CogSize.Small => 0.5f,
+                CogSize.Medium => 1.0f,
+                CogSize.Large => 1.8f,
+                _ => 0.5f
+            };
         }
 
         /// <summary>
-        /// Vérifie si on peut placer un rouage à cette cellule
+        /// Vérifie si on peut placer un rouage à cette position
         /// </summary>
-        private bool CanPlaceAt(HexCell cell)
+        private bool CanPlaceAt(Vector2 position, float radius, int powerRequired)
         {
-            if (cell == null || cogToPlace == null) return false;
-
-            // Vérifie que la cellule est libre
-            if (cell.IsOccupied) return false;
-
-            // Vérifie que la cellule est placeable
-            if (!cell.IsPlaceable) return false;
+            if (cogToPlace == null) return false;
 
             // TODO: Vérifier que le joueur a assez d'or
 
             // Vérifie avec le système de chaîne
             if (cogChain != null)
             {
-                // Crée un rouage temporaire pour vérifier
-                Cog tempCog = new GameObject("TempCog").AddComponent<Cog>();
-                // TODO: Configurer le tempCog selon cogToPlace
-
-                bool canPlace = cogChain.CanPlaceCog(cell.Coordinates, tempCog);
-
-                Destroy(tempCog.gameObject);
-                return canPlace;
+                return cogChain.CanPlaceCog(position, radius, powerRequired);
             }
 
             return true;
@@ -185,29 +196,26 @@ namespace CogsTowerDefense.Cogs
         /// <summary>
         /// Place le rouage à la position donnée
         /// </summary>
-        private void PlaceCog(HexCell cell)
+        private void PlaceCog()
         {
-            if (cell == null || cogToPlace == null || cogToPlace.Prefab == null)
+            if (cogToPlace == null || cogToPlace.Prefab == null)
                 return;
 
             // TODO: Vérifier et dépenser l'or
 
             // Instancie le rouage
-            GameObject cogObj = Instantiate(cogToPlace.Prefab, cell.WorldPosition, Quaternion.identity);
+            GameObject cogObj = Instantiate(cogToPlace.Prefab, currentMouseWorldPos, Quaternion.identity);
             Cog cog = cogObj.GetComponent<Cog>();
 
             if (cog != null)
             {
-                // Enregistre dans la grille
-                hexGrid.PlaceObject(cell.Coordinates, cogObj);
-
                 // Enregistre dans la chaîne
                 if (cogChain != null)
                 {
-                    cogChain.RegisterCog(cog, cell.Coordinates);
+                    cogChain.RegisterCog(cog);
                 }
 
-                Debug.Log($"Placed {cogToPlace.CogName} at {cell.Coordinates}");
+                Debug.Log($"Placed {cogToPlace.CogName} at {currentMouseWorldPos}");
             }
 
             // Réinitialise pour le prochain placement
@@ -233,10 +241,10 @@ namespace CogsTowerDefense.Cogs
             isPlacementMode = false;
             cogToPlace = null;
 
-            if (currentPreview != null)
+            if (previewCircle != null)
             {
-                Destroy(currentPreview);
-                currentPreview = null;
+                Destroy(previewCircle.gameObject);
+                previewCircle = null;
             }
 
             Debug.Log("Cancelled placement mode");
@@ -250,10 +258,10 @@ namespace CogsTowerDefense.Cogs
             cogToPlace = cogData;
 
             // Détruit l'ancien preview
-            if (currentPreview != null)
+            if (previewCircle != null)
             {
-                Destroy(currentPreview);
-                currentPreview = null;
+                Destroy(previewCircle.gameObject);
+                previewCircle = null;
             }
         }
 
