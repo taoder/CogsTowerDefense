@@ -167,6 +167,7 @@ namespace CogsTowerDefense.Cogs
 
         /// <summary>
         /// Trouve le rouage à une position donnée
+        /// Inclut la zone des dents dans la détection
         /// </summary>
         private Cog GetCogAtPosition(Vector2 position)
         {
@@ -176,7 +177,10 @@ namespace CogsTowerDefense.Cogs
             foreach (var cog in allCogs)
             {
                 float distance = Vector2.Distance(position, cog.Position);
-                if (distance <= cog.Radius)
+                // Ajoute une marge pour inclure les dents (environ +0.125 unités)
+                // Les dents ajoutent 8 pixels et avec scale variable, ça fait environ +15% au rayon
+                float clickRadius = cog.Radius * 1.2f;
+                if (distance <= clickRadius)
                 {
                     return cog;
                 }

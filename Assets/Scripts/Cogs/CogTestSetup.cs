@@ -69,9 +69,9 @@ namespace CogsTowerDefense.Cogs
             visual.transform.localPosition = Vector3.zero;
             visual.transform.localScale = Vector3.one;
 
-            // Ajoute un SpriteRenderer
+            // Ajoute un SpriteRenderer avec sprite de moteur à crans
             SpriteRenderer sr = visual.AddComponent<SpriteRenderer>();
-            sr.sprite = GeometricSpriteGenerator.CreateCircleSprite(64, new Color(1f, 0.5f, 0f), true);
+            sr.sprite = GeometricSpriteGenerator.CreateMotorSprite(64, new Color(1f, 0.5f, 0f), 8);
             sr.sortingOrder = 0;
 
             // Ajoute un marqueur au centre
