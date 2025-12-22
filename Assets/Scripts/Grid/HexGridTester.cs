@@ -1,10 +1,12 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace CogsTowerDefense.Grid
 {
     /// <summary>
     /// Script de test pour la grille hexagonale
     /// Permet de cliquer sur la grille et placer des objets de test
+    /// Utilise le nouveau Input System (UnityEngine.InputSystem)
     /// </summary>
     public class HexGridTester : MonoBehaviour
     {
@@ -47,13 +49,18 @@ namespace CogsTowerDefense.Grid
 
         /// <summary>
         /// Gère les inputs souris pour le hover et le placement
+        /// Utilise le nouveau Input System
         /// </summary>
         private void HandleMouseInput()
         {
             if (mainCamera == null || hexGrid == null) return;
 
+            // Vérification que la souris est disponible
+            if (Mouse.current == null) return;
+
             // Convertit la position souris en position monde
-            Vector3 mouseWorldPos = mainCamera.ScreenToWorldPoint(Input.mousePosition);
+            Vector2 mousePosition = Mouse.current.position.ReadValue();
+            Vector3 mouseWorldPos = mainCamera.ScreenToWorldPoint(new Vector3(mousePosition.x, mousePosition.y, 0));
             mouseWorldPos.z = 0; // Assure que Z est 0 pour la 2D
 
             // Récupère la cellule sous la souris
@@ -81,14 +88,14 @@ namespace CogsTowerDefense.Grid
                 }
             }
 
-            // Placement au clic
-            if (spawnOnClick && Input.GetMouseButtonDown(0))
+            // Placement au clic gauche
+            if (spawnOnClick && Mouse.current.leftButton.wasPressedThisFrame)
             {
                 PlaceTestObject(hoveredCell);
             }
 
             // Suppression au clic droit
-            if (Input.GetMouseButtonDown(1))
+            if (Mouse.current.rightButton.wasPressedThisFrame)
             {
                 RemoveTestObject(hoveredCell);
             }
