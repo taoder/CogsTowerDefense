@@ -480,7 +480,7 @@ Comportement AI :
 ## 🔄 Ordre d'Implémentation Recommandé
 
 ### **Phase 1 : Fondations (Semaine 1)**
-1. Setup projet Unity 6.3 LTS ✅
+1. Setup projet Unity 6 LTS ✅
 2. Grille isométrique + conversions coordonnées ✅
 3. GameManager + State Machine basique
 4. ResourceManager + UI basique
