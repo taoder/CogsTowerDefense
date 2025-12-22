@@ -27,12 +27,12 @@ namespace CogsTowerDefense.Grid
 
             if (hexGrid == null)
             {
-                hexGrid = FindObjectOfType<HexGrid>();
+                hexGrid = FindFirstObjectByType<HexGrid>();
             }
 
             if (gridRenderer == null)
             {
-                gridRenderer = FindObjectOfType<HexGridRenderer>();
+                gridRenderer = FindFirstObjectByType<HexGridRenderer>();
             }
 
             // Crée un prefab de test simple si non assigné

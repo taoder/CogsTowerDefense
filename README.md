@@ -114,7 +114,7 @@ Assets/
 ## 🚀 Démarrage
 
 ### Prérequis
-- **Unity 2022.3 LTS** (recommandé)
+- **Unity 6000.0.23f1 (Unity 6.3 LTS)** (recommandé)
 - Git
 
 ### Installation
@@ -162,7 +162,7 @@ Les sprites finaux seront intégrés plus tard. Le gameplay est prioritaire.
 
 ## 🛠️ Technologies
 
-- **Engine** : Unity 2022.3 LTS
+- **Engine** : Unity 6000.0.23f1 (Unity 6.3 LTS)
 - **Language** : C#
 - **Architecture** : Component-based, ScriptableObjects
 - **Patterns** : Singleton, State Machine, Observer, Object Pooling
