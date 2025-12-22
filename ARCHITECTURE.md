@@ -485,7 +485,7 @@ Comportement AI :
 3. GameManager + State Machine basique
 4. ResourceManager + UI basique
 
-### **Phase 2 : Système Rouages (Semaine 2)**
+### **Phase 2 : Système Rouages (Semaine 2)** ✅
 5. Engine + indicateur puissance
 6. Cog (placement, rotation visuelle)
 7. CogChain validation

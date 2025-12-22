@@ -62,7 +62,7 @@ Un jeu de tower defense unique où vous construisez des chaînes de rouages pour
 
 ### 🔜 À Implémenter
 
-**Phase 2 : Système de Rouages** (Prochaine étape)
+**Phase 2 : Système de Rouages** ✅ (TERMINÉ)
 - Engine (moteur central)
 - Cog (rouages placables)
 - CogChain (validation des connexions)
