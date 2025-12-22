@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using UnityEngine;
-using CogsTowerDefense.Grid;
 
 namespace CogsTowerDefense.Cogs
 {
     /// <summary>
     /// Moteur central qui fournit la puissance et fait tourner les rouages connectés
+    /// Le moteur est un rouage comme les autres, de taille Small (rayon 0.5)
     /// </summary>
     public class Engine : MonoBehaviour
     {
@@ -17,13 +17,13 @@ namespace CogsTowerDefense.Cogs
         [SerializeField] private int powerUpgradeCost = 100;
         [SerializeField] private int speedUpgradeCost = 150;
 
-        [Header("Grid Integration")]
-        [SerializeField] private HexCoordinates gridPosition;
-
         [Header("Visual Feedback")]
         [SerializeField] private Color okColor = Color.green;
         [SerializeField] private Color warningColor = Color.yellow;
         [SerializeField] private Color overloadColor = Color.red;
+
+        // Le moteur est un rouage de taille Small
+        private const float ENGINE_RADIUS = 0.5f;
 
         // État interne
         private List<Cog> connectedCogs = new List<Cog>();
@@ -37,7 +37,8 @@ namespace CogsTowerDefense.Cogs
         public int CurrentPowerUsed => currentPowerUsed;
         public PowerStatus Status => currentStatus;
         public bool IsRunning => isRunning;
-        public HexCoordinates GridPosition => gridPosition;
+        public Vector2 Position => transform.position;
+        public float Radius => ENGINE_RADIUS;
         public IReadOnlyList<Cog> ConnectedCogs => connectedCogs;
 
         private void Update()
@@ -198,7 +199,7 @@ namespace CogsTowerDefense.Cogs
         private void OnDrawGizmos()
         {
             Gizmos.color = GetStatusColor();
-            Gizmos.DrawWireSphere(transform.position, 0.5f);
+            Gizmos.DrawWireSphere(transform.position, ENGINE_RADIUS);
 
             // Dessine les connexions aux rouages
             if (connectedCogs != null)
@@ -212,14 +213,6 @@ namespace CogsTowerDefense.Cogs
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// Initialise la position sur la grille
-        /// </summary>
-        public void SetGridPosition(HexCoordinates position)
-        {
-            gridPosition = position;
         }
     }
 }

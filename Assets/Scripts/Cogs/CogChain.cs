@@ -1,59 +1,90 @@
 using System.Collections.Generic;
 using UnityEngine;
-using CogsTowerDefense.Grid;
 
 namespace CogsTowerDefense.Cogs
 {
     /// <summary>
     /// Gère les chaînes de rouages connectés à un moteur
-    /// Valide les connexions et calcule la puissance totale
+    /// Validation par distance physique : les rouages doivent se toucher
     /// </summary>
     public class CogChain : MonoBehaviour
     {
         [Header("References")]
         [SerializeField] private Engine engine;
-        [SerializeField] private HexGrid hexGrid;
 
-        // Cache des rouages par position
-        private Dictionary<HexCoordinates, Cog> cogsByPosition = new Dictionary<HexCoordinates, Cog>();
+        [Header("Contact Settings")]
+        [SerializeField] private float contactTolerance = 0.1f; // Tolérance pour considérer que deux rouages se touchent
+
+        // Tous les rouages dans le jeu
+        private List<Cog> allCogs = new List<Cog>();
 
         // Rouages valides (connectés au moteur)
         private HashSet<Cog> validCogs = new HashSet<Cog>();
 
-        private void Awake()
+        /// <summary>
+        /// Vérifie si deux positions se touchent (distance ≈ rayon1 + rayon2)
+        /// </summary>
+        private bool AreTouching(Vector2 pos1, float radius1, Vector2 pos2, float radius2)
         {
-            if (hexGrid == null)
-            {
-                hexGrid = FindFirstObjectByType<HexGrid>();
-            }
+            float distance = Vector2.Distance(pos1, pos2);
+            float requiredDistance = radius1 + radius2;
+
+            // Les rouages se touchent si la distance est proche de la somme des rayons
+            return Mathf.Abs(distance - requiredDistance) <= contactTolerance;
+        }
+
+        /// <summary>
+        /// Vérifie si un rouage touche le moteur
+        /// </summary>
+        private bool TouchesEngine(Cog cog)
+        {
+            if (engine == null || cog == null) return false;
+
+            return AreTouching(cog.Position, cog.Radius, engine.Position, engine.Radius);
+        }
+
+        /// <summary>
+        /// Vérifie si deux rouages se touchent
+        /// </summary>
+        private bool TouchesCog(Cog cog1, Cog cog2)
+        {
+            if (cog1 == null || cog2 == null || cog1 == cog2) return false;
+
+            return AreTouching(cog1.Position, cog1.Radius, cog2.Position, cog2.Radius);
         }
 
         /// <summary>
         /// Enregistre un rouage dans la chaîne
         /// </summary>
-        public bool RegisterCog(Cog cog, HexCoordinates position)
+        public bool RegisterCog(Cog cog)
         {
             if (cog == null) return false;
 
-            // Vérifie si la position est déjà occupée
-            if (cogsByPosition.ContainsKey(position))
+            // Vérifie que le rouage n'est pas déjà enregistré
+            if (allCogs.Contains(cog))
             {
-                Debug.LogWarning($"Position {position} already has a cog!");
+                Debug.LogWarning($"Cog {cog.name} is already registered!");
+                return false;
+            }
+
+            // Vérifie qu'il n'y a pas de collision avec d'autres rouages (overlap)
+            if (OverlapsWithAnyCog(cog))
+            {
+                Debug.LogWarning($"Cog {cog.name} overlaps with another cog!");
                 return false;
             }
 
             // Ajoute le rouage
-            cogsByPosition[position] = cog;
-            cog.SetGridPosition(position);
+            allCogs.Add(cog);
 
             // Vérifie la connexion au moteur
-            if (IsConnectedToEngine(position))
+            if (IsConnectedToEngine(cog))
             {
                 ConnectCogToEngine(cog);
             }
             else
             {
-                Debug.LogWarning($"Cog at {position} is not connected to the engine!");
+                Debug.LogWarning($"Cog {cog.name} is not connected to the engine!");
             }
 
             return true;
@@ -62,9 +93,9 @@ namespace CogsTowerDefense.Cogs
         /// <summary>
         /// Supprime un rouage de la chaîne
         /// </summary>
-        public void UnregisterCog(HexCoordinates position)
+        public void UnregisterCog(Cog cog)
         {
-            if (!cogsByPosition.TryGetValue(position, out Cog cog))
+            if (cog == null || !allCogs.Contains(cog))
             {
                 return;
             }
@@ -72,48 +103,38 @@ namespace CogsTowerDefense.Cogs
             // Déconnecte du moteur
             cog.DisconnectFromEngine();
             validCogs.Remove(cog);
-            cogsByPosition.Remove(position);
+            allCogs.Remove(cog);
 
             // Revalide tous les rouages (certains pourraient être déconnectés maintenant)
             RevalidateAllCogs();
         }
 
         /// <summary>
-        /// Vérifie si une position est connectée au moteur (directement ou via d'autres rouages)
+        /// Vérifie si un rouage overlap avec un autre (collision)
         /// </summary>
-        private bool IsConnectedToEngine(HexCoordinates position)
+        private bool OverlapsWithAnyCog(Cog newCog)
         {
-            if (engine == null) return false;
-
-            // Utilise BFS pour trouver un chemin vers le moteur
-            HashSet<HexCoordinates> visited = new HashSet<HexCoordinates>();
-            Queue<HexCoordinates> toVisit = new Queue<HexCoordinates>();
-
-            toVisit.Enqueue(position);
-            visited.Add(position);
-
-            while (toVisit.Count > 0)
+            foreach (var existingCog in allCogs)
             {
-                HexCoordinates current = toVisit.Dequeue();
+                float distance = Vector2.Distance(newCog.Position, existingCog.Position);
+                float minDistance = newCog.Radius + existingCog.Radius;
 
-                // Vérifie si on est adjacent au moteur
-                if (IsAdjacentToEngine(current))
+                // Overlap si la distance est inférieure à la somme des rayons
+                if (distance < minDistance - contactTolerance)
                 {
                     return true;
                 }
+            }
 
-                // Vérifie les voisins
-                HexCoordinates[] neighbors = current.GetNeighbors();
-                foreach (var neighbor in neighbors)
+            // Vérifie aussi l'overlap avec le moteur
+            if (engine != null)
+            {
+                float distance = Vector2.Distance(newCog.Position, engine.Position);
+                float minDistance = newCog.Radius + engine.Radius;
+
+                if (distance < minDistance - contactTolerance)
                 {
-                    if (visited.Contains(neighbor)) continue;
-
-                    // Si le voisin a un rouage connecté, continue la recherche
-                    if (cogsByPosition.ContainsKey(neighbor))
-                    {
-                        visited.Add(neighbor);
-                        toVisit.Enqueue(neighbor);
-                    }
+                    return true;
                 }
             }
 
@@ -121,14 +142,51 @@ namespace CogsTowerDefense.Cogs
         }
 
         /// <summary>
-        /// Vérifie si une position est adjacente au moteur
+        /// Vérifie si un rouage est connecté au moteur (directement ou via d'autres rouages)
+        /// Utilise BFS pour trouver un chemin de contact physique
         /// </summary>
-        private bool IsAdjacentToEngine(HexCoordinates position)
+        private bool IsConnectedToEngine(Cog startCog)
         {
-            if (engine == null) return false;
+            if (engine == null || startCog == null) return false;
 
-            HexCoordinates enginePos = engine.GridPosition;
-            return position.DistanceTo(enginePos) == 1;
+            // Si touche directement le moteur, c'est bon
+            if (TouchesEngine(startCog))
+            {
+                return true;
+            }
+
+            // Sinon, cherche un chemin via d'autres rouages (BFS)
+            HashSet<Cog> visited = new HashSet<Cog>();
+            Queue<Cog> toVisit = new Queue<Cog>();
+
+            toVisit.Enqueue(startCog);
+            visited.Add(startCog);
+
+            while (toVisit.Count > 0)
+            {
+                Cog current = toVisit.Dequeue();
+
+                // Trouve tous les rouages qui touchent le rouage actuel
+                foreach (var neighbor in allCogs)
+                {
+                    if (visited.Contains(neighbor)) continue;
+
+                    if (TouchesCog(current, neighbor))
+                    {
+                        // Vérifie si ce voisin touche le moteur
+                        if (TouchesEngine(neighbor))
+                        {
+                            return true;
+                        }
+
+                        // Sinon, continue la recherche
+                        visited.Add(neighbor);
+                        toVisit.Enqueue(neighbor);
+                    }
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -148,7 +206,7 @@ namespace CogsTowerDefense.Cogs
         private void RevalidateAllCogs()
         {
             // Déconnecte tous les rouages
-            foreach (var cog in cogsByPosition.Values)
+            foreach (var cog in allCogs)
             {
                 cog.DisconnectFromEngine();
             }
@@ -156,50 +214,60 @@ namespace CogsTowerDefense.Cogs
             validCogs.Clear();
 
             // Reconnecte ceux qui sont encore valides
-            foreach (var kvp in cogsByPosition)
+            foreach (var cog in allCogs)
             {
-                if (IsConnectedToEngine(kvp.Key))
+                if (IsConnectedToEngine(cog))
                 {
-                    ConnectCogToEngine(kvp.Value);
+                    ConnectCogToEngine(cog);
                 }
             }
 
-            Debug.Log($"Revalidated chain: {validCogs.Count}/{cogsByPosition.Count} cogs connected");
+            Debug.Log($"Revalidated chain: {validCogs.Count}/{allCogs.Count} cogs connected");
         }
 
         /// <summary>
         /// Vérifie si on peut placer un rouage à une position
         /// </summary>
-        public bool CanPlaceCog(HexCoordinates position, Cog cog)
+        public bool CanPlaceCog(Vector2 position, float radius, int powerRequired)
         {
-            // Vérifie que la position est libre
-            if (cogsByPosition.ContainsKey(position))
+            // Crée un rouage temporaire pour les tests
+            Cog tempCog = CreateTempCog(position, radius);
+
+            // Vérifie qu'il n'y a pas d'overlap
+            if (OverlapsWithAnyCog(tempCog))
             {
+                Destroy(tempCog.gameObject);
                 return false;
             }
 
             // Vérifie que le rouage serait connecté au moteur
-            if (!IsConnectedToEngine(position))
+            if (!IsConnectedToEngine(tempCog))
             {
+                Destroy(tempCog.gameObject);
                 return false;
             }
 
             // Vérifie que le moteur peut supporter la puissance
-            if (engine != null && !engine.CanAddCog(cog.PowerRequired))
+            if (engine != null && !engine.CanAddCog(powerRequired))
             {
+                Destroy(tempCog.gameObject);
                 return false;
             }
 
+            Destroy(tempCog.gameObject);
             return true;
         }
 
         /// <summary>
-        /// Obtient le rouage à une position
+        /// Crée un rouage temporaire pour les tests
         /// </summary>
-        public Cog GetCogAtPosition(HexCoordinates position)
+        private Cog CreateTempCog(Vector2 position, float radius)
         {
-            cogsByPosition.TryGetValue(position, out Cog cog);
-            return cog;
+            GameObject tempObj = new GameObject("TempCog");
+            tempObj.transform.position = position;
+            Cog tempCog = tempObj.AddComponent<Cog>();
+            // Note: Le rayon sera récupéré via GetRadius() basé sur la taille
+            return tempCog;
         }
 
         /// <summary>
@@ -215,7 +283,7 @@ namespace CogsTowerDefense.Cogs
         /// </summary>
         public int GetTotalCogCount()
         {
-            return cogsByPosition.Count;
+            return allCogs.Count;
         }
 
         /// <summary>
@@ -231,12 +299,7 @@ namespace CogsTowerDefense.Cogs
         /// </summary>
         private void OnDrawGizmos()
         {
-            if (engine == null || hexGrid == null) return;
-
-            // Dessine la zone autour du moteur
-            Gizmos.color = Color.cyan;
-            Vector3 engineWorldPos = IsometricUtils.HexToWorldPosition(engine.GridPosition, hexGrid.HexSize);
-            Gizmos.DrawWireSphere(engineWorldPos, 1.5f);
+            if (engine == null) return;
 
             // Dessine les connexions valides en vert
             Gizmos.color = Color.green;
@@ -244,18 +307,17 @@ namespace CogsTowerDefense.Cogs
             {
                 if (cog != null)
                 {
-                    Gizmos.DrawLine(engineWorldPos, cog.transform.position);
+                    Gizmos.DrawLine(engine.Position, cog.Position);
                 }
             }
 
             // Dessine les rouages non connectés en rouge
             Gizmos.color = Color.red;
-            foreach (var kvp in cogsByPosition)
+            foreach (var cog in allCogs)
             {
-                if (!validCogs.Contains(kvp.Value))
+                if (!validCogs.Contains(cog))
                 {
-                    Vector3 cogWorldPos = IsometricUtils.HexToWorldPosition(kvp.Key, hexGrid.HexSize);
-                    Gizmos.DrawWireCube(cogWorldPos, Vector3.one * 0.3f);
+                    Gizmos.DrawWireCube(cog.Position, Vector3.one * 0.3f);
                 }
             }
         }

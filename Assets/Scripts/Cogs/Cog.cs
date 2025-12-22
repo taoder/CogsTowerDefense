@@ -1,10 +1,10 @@
 using UnityEngine;
-using CogsTowerDefense.Grid;
 
 namespace CogsTowerDefense.Cogs
 {
     /// <summary>
     /// Rouage qui tourne grâce au moteur et produit des unités
+    /// Système de placement libre : les rouages doivent se toucher physiquement
     /// </summary>
     public class Cog : MonoBehaviour
     {
@@ -16,11 +16,13 @@ namespace CogsTowerDefense.Cogs
         [Header("Production Settings")]
         [SerializeField] private float baseRotationsRequired = 10f; // Rotations pour produire 1 unité
 
-        [Header("Grid Integration")]
-        [SerializeField] private HexCoordinates gridPosition;
-
         [Header("Visual")]
         [SerializeField] private Transform visualTransform; // L'objet qui tourne visuellement
+
+        // Rayons fixes par taille (grosse différence entre les tailles)
+        private const float SMALL_RADIUS = 0.5f;
+        private const float MEDIUM_RADIUS = 1.0f;  // 2x plus grand
+        private const float LARGE_RADIUS = 1.8f;   // 3.6x plus grand, pour les héros
 
         // État interne
         private float currentRotation = 0f; // Progrès de rotation (0-100%)
@@ -34,9 +36,10 @@ namespace CogsTowerDefense.Cogs
         public UnitType UnitType => unitType;
         public int PowerRequired => powerRequired;
         public float RotationProgress => currentRotation / GetRotationsRequired();
-        public HexCoordinates GridPosition => gridPosition;
+        public Vector2 Position => transform.position;
         public bool IsConnected => isConnected;
         public Engine ConnectedEngine => connectedEngine;
+        public float Radius => GetRadius();
 
         private void Awake()
         {
@@ -47,6 +50,20 @@ namespace CogsTowerDefense.Cogs
             {
                 visualTransform = transform;
             }
+        }
+
+        /// <summary>
+        /// Retourne le rayon du rouage en fonction de sa taille
+        /// </summary>
+        public float GetRadius()
+        {
+            return cogSize switch
+            {
+                CogSize.Small => SMALL_RADIUS,
+                CogSize.Medium => MEDIUM_RADIUS,
+                CogSize.Large => LARGE_RADIUS,
+                _ => SMALL_RADIUS
+            };
         }
 
         /// <summary>
@@ -101,7 +118,7 @@ namespace CogsTowerDefense.Cogs
         /// </summary>
         private void ProduceUnit()
         {
-            Debug.Log($"Cog at {gridPosition} produced a {unitType} unit (Level {level})!");
+            Debug.Log($"Cog ({cogSize}) at {transform.position} produced a {unitType} unit (Level {level})!");
 
             // TODO: Instancier l'unité réelle
             // Pour l'instant, juste un log
@@ -186,14 +203,6 @@ namespace CogsTowerDefense.Cogs
         }
 
         /// <summary>
-        /// Initialise la position sur la grille
-        /// </summary>
-        public void SetGridPosition(HexCoordinates position)
-        {
-            gridPosition = position;
-        }
-
-        /// <summary>
         /// Change le type d'unité produite
         /// </summary>
         public void SetUnitType(UnitType newType)
@@ -210,9 +219,8 @@ namespace CogsTowerDefense.Cogs
             // Couleur selon la connexion
             Gizmos.color = isConnected ? Color.green : Color.red;
 
-            // Taille du Gizmo selon la taille du rouage
-            float gizmoSize = (int)cogSize * 0.2f;
-            Gizmos.DrawWireCube(transform.position, Vector3.one * gizmoSize);
+            // Cercle selon le rayon réel du rouage
+            Gizmos.DrawWireSphere(transform.position, GetRadius());
 
             // Affiche la progression
             if (isConnected)
