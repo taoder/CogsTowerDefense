@@ -78,7 +78,7 @@ namespace CogsTowerDefense.UI
             if (statusText != null)
             {
                 string status = engine.IsRunning ? "RUNNING" : "STOPPED";
-                PowerStatus powerStatus = engine.CurrentStatus;
+                PowerStatus powerStatus = engine.Status;
 
                 Color statusColor = powerStatus switch
                 {
@@ -98,7 +98,7 @@ namespace CogsTowerDefense.UI
                 powerText.text = $"Power: {engine.CurrentPowerUsed}/{engine.MaxPower}";
 
                 // Change la couleur selon le statut
-                powerText.color = engine.CurrentStatus switch
+                powerText.color = engine.Status switch
                 {
                     PowerStatus.OK => Color.green,
                     PowerStatus.Warning => Color.yellow,
