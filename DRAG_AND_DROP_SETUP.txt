@@ -72,15 +72,20 @@ Le système de drag & drop est maintenant prêt ! Voici comment le configurer da
   - Le rouage est immédiatement retiré et la puissance libérée
 
 ✓ Validation en temps réel :
-  - Cercle VERT : placement valide (touche moteur/rouage, pas de collision, puissance suffisante)
-  - Cercle ROUGE : placement invalide
+  - Cercle VERT : placement valide (pas de collision)
+  - Cercle ROUGE : placement invalide (collision OU pas assez de puissance si connecté)
   - Cercle ORANGE : rouage survolé, prêt à être supprimé (DELETE/BACKSPACE)
+
+Note : Les rouages placés hors connexion (vert mais isolés) sont acceptés mais ne produiront rien
 
 ## 5. RÈGLES DE PLACEMENT
 
-✓ Un rouage doit toucher le moteur OU un autre rouage connecté
-✓ Les rouages ne peuvent pas se chevaucher
-✓ Il faut assez de puissance disponible dans le moteur
+✓ PLACEMENT LIBRE : Les rouages peuvent être placés n'importe où
+✓ SEULE CONTRAINTE : Les rouages ne peuvent pas se chevaucher
+✓ Connexion au moteur : optionnelle mais recommandée
+  - Rouages connectés : consomment de la puissance et produisent des unités
+  - Rouages déconnectés : ne consomment pas de puissance mais ne produisent rien
+✓ Si connecté : il faut assez de puissance disponible dans le moteur
 ✓ Tolérance de contact : 0.1 unité
 
 ## 6. TAILLES DES ROUAGES

@@ -55,6 +55,7 @@ namespace CogsTowerDefense.Cogs
 
         /// <summary>
         /// Enregistre un rouage dans la chaîne
+        /// Le rouage peut être connecté ou non au moteur
         /// </summary>
         public bool RegisterCog(Cog cog)
         {
@@ -81,10 +82,11 @@ namespace CogsTowerDefense.Cogs
             if (IsConnectedToEngine(cog))
             {
                 ConnectCogToEngine(cog);
+                Debug.Log($"Cog {cog.name} registered and connected to engine");
             }
             else
             {
-                Debug.LogWarning($"Cog {cog.name} is not connected to the engine!");
+                Debug.Log($"Cog {cog.name} registered but not connected to engine (placement libre)");
             }
 
             return true;
@@ -227,6 +229,8 @@ namespace CogsTowerDefense.Cogs
 
         /// <summary>
         /// Vérifie si on peut placer un rouage à une position
+        /// Seule contrainte : pas d'overlap avec d'autres rouages
+        /// La connexion au moteur n'est plus obligatoire
         /// </summary>
         public bool CanPlaceCog(Vector2 position, float radius, int powerRequired)
         {
@@ -240,22 +244,18 @@ namespace CogsTowerDefense.Cogs
                 return false;
             }
 
-            // Vérifie que le rouage serait connecté au moteur
-            if (!IsConnectedToEngine(tempCog))
-            {
-                Destroy(tempCog.gameObject);
-                return false;
-            }
+            // Vérifie si le rouage serait connecté au moteur
+            bool wouldBeConnected = IsConnectedToEngine(tempCog);
 
-            // Vérifie que le moteur peut supporter la puissance
-            if (engine != null && !engine.CanAddCog(powerRequired))
+            // Si connecté, vérifie que le moteur peut supporter la puissance
+            if (wouldBeConnected && engine != null && !engine.CanAddCog(powerRequired))
             {
                 Destroy(tempCog.gameObject);
                 return false;
             }
 
             Destroy(tempCog.gameObject);
-            return true;
+            return true; // OK même si non connecté
         }
 
         /// <summary>
