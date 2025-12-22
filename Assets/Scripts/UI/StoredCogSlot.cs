@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using TMPro;
+using CogsTowerDefense.Cogs;
 using CogsTowerDefense.Utils;
 
 namespace CogsTowerDefense.UI
