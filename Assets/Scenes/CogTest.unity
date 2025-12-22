@@ -320,7 +320,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 2222222222}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6, type: 3}
+  m_Script: {fileID: 11500000, guid: 1fe18ede181b4582b528554293c1a7ac, type: 3}
   m_Name:
   m_EditorClassIdentifier:
   maxPower: 15
@@ -374,7 +374,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 3333333333}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2, type: 3}
+  m_Script: {fileID: 11500000, guid: e5f383e9ebeb4c7c86b5db217034d30b, type: 3}
   m_Name:
   m_EditorClassIdentifier:
   engine: {fileID: 2222222224}
@@ -420,7 +420,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 4444444444}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3, type: 3}
+  m_Script: {fileID: 11500000, guid: d1a36fe84c6c40f7b2e4d85b46a82825, type: 3}
   m_Name:
   m_EditorClassIdentifier:
   hexGrid: {fileID: 1111111113}
