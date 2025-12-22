@@ -9,7 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0, type: 3}
+  m_Script: {fileID: 11500000, guid: 5087ac6972684bf7b3c45f2782fde701, type: 3}
   m_Name: SmallCog_Melee
   m_EditorClassIdentifier:
   cogName: Small Melee Cog
@@ -17,4 +17,4 @@ MonoBehaviour:
   unitType: 0
   baseCost: 10
   baseRotationsRequired: 10
-  cogPrefab: {fileID: 1234567890123456, guid: c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3, type: 3}
+  cogPrefab: {fileID: 1234567890123456, guid: f38e15a29e644d29927995fe11913951, type: 3}
