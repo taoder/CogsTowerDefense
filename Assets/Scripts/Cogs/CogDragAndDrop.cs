@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using CogsTowerDefense.UI;
 
 namespace CogsTowerDefense.Cogs
 {
@@ -44,6 +45,11 @@ namespace CogsTowerDefense.Cogs
         // Pour la suppression
         private Cog cogToDelete;
         private LineRenderer deleteHighlight;
+
+        // Pour le drag depuis le stockage
+        private bool dragFromStorage = false;
+        private int storageSlotIndex = -1;
+        private CogStorageZone sourceStorage = null;
 
         private void Awake()
         {
@@ -132,6 +138,33 @@ namespace CogsTowerDefense.Cogs
             CreatePreviewCircle();
 
             Debug.Log($"Started dragging new cog: {cogData.CogName}");
+        }
+
+        /// <summary>
+        /// Démarre le drag d'un rouage depuis la zone de stockage
+        /// </summary>
+        public void StartDragFromStorage(CogData cogData, int slotIndex, CogStorageZone storage)
+        {
+            if (cogData == null || storage == null) return;
+
+            // Marque que ce drag vient du stockage
+            dragFromStorage = true;
+            storageSlotIndex = slotIndex;
+            sourceStorage = storage;
+
+            // Utilise la même logique que StartDragNewCog
+            cogToPlace = cogData;
+            currentDragState = DragState.NewCog;
+            dragStartPos = currentMouseWorldPos;
+
+            // Calcule les propriétés du rouage
+            draggedCogRadius = GetToothRadiusForSize(cogData.Size);
+            draggedCogPowerRequired = cogData.GetPowerRequired(1);
+
+            // Crée le preview visuel
+            CreatePreviewCircle();
+
+            Debug.Log($"Started dragging cog from storage slot {slotIndex}: {cogData.CogName}");
         }
 
         /// <summary>
@@ -273,6 +306,13 @@ namespace CogsTowerDefense.Cogs
             {
                 cogChain.RegisterCog(cog);
                 Debug.Log($"Placed new {cogToPlace.CogName} at {currentMouseWorldPos}");
+
+                // Si le rouage vient du stockage, le retire du stockage
+                if (dragFromStorage && sourceStorage != null && storageSlotIndex >= 0)
+                {
+                    sourceStorage.RemoveCog(storageSlotIndex);
+                    Debug.Log($"Removed cog from storage slot {storageSlotIndex}");
+                }
             }
         }
 
@@ -300,6 +340,11 @@ namespace CogsTowerDefense.Cogs
             currentDragState = DragState.None;
             cogToPlace = null;
             draggedExistingCog = null;
+
+            // Réinitialise les flags de stockage
+            dragFromStorage = false;
+            storageSlotIndex = -1;
+            sourceStorage = null;
 
             if (previewCircle != null)
             {

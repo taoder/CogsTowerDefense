@@ -5,13 +5,13 @@ using CogsTowerDefense.Cogs;
 namespace CogsTowerDefense.UI
 {
     /// <summary>
-    /// Gère les clics sur les boutons UI pour placer des rouages
+    /// Gère les clics sur les boutons UI pour ajouter des rouages au stockage
     /// </summary>
     [RequireComponent(typeof(Button))]
     public class CogButtonUI : MonoBehaviour
     {
         [Header("References")]
-        [SerializeField] private CogDragAndDrop dragAndDrop;
+        [SerializeField] private CogStorageZone storageZone;
         [SerializeField] private CogData cogData;
 
         private Button button;
@@ -20,10 +20,10 @@ namespace CogsTowerDefense.UI
         {
             button = GetComponent<Button>();
 
-            // Trouve CogDragAndDrop si non assigné
-            if (dragAndDrop == null)
+            // Trouve CogStorageZone si non assigné
+            if (storageZone == null)
             {
-                dragAndDrop = FindFirstObjectByType<CogDragAndDrop>();
+                storageZone = FindFirstObjectByType<CogStorageZone>();
             }
 
             // Ajoute le listener
@@ -38,9 +38,9 @@ namespace CogsTowerDefense.UI
         /// </summary>
         private void OnButtonClick()
         {
-            if (dragAndDrop == null)
+            if (storageZone == null)
             {
-                Debug.LogError("CogDragAndDrop not found!");
+                Debug.LogError("CogStorageZone not found!");
                 return;
             }
 
@@ -50,9 +50,15 @@ namespace CogsTowerDefense.UI
                 return;
             }
 
-            // Démarre le drag and drop pour ce type de rouage
-            dragAndDrop.StartDragNewCog(cogData);
-            Debug.Log($"Button clicked: Starting placement of {cogData.CogName}");
+            // Ajoute le rouage à la zone de stockage
+            if (storageZone.AddCog(cogData))
+            {
+                Debug.Log($"Button clicked: Added {cogData.CogName} to storage");
+            }
+            else
+            {
+                Debug.LogWarning($"Cannot add {cogData.CogName}: storage is full");
+            }
         }
 
         private void OnDestroy()
