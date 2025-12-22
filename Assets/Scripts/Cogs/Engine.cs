@@ -24,6 +24,7 @@ namespace CogsTowerDefense.Cogs
 
         // Le moteur est un rouage de taille Small
         private const float ENGINE_RADIUS = 0.5f;
+        private const float ENGINE_SPRITE_SCALE = 1.0f; // Même scale qu'un Small cog
 
         // État interne
         private List<Cog> connectedCogs = new List<Cog>();
@@ -40,6 +41,17 @@ namespace CogsTowerDefense.Cogs
         public Vector2 Position => transform.position;
         public float Radius => ENGINE_RADIUS;
         public IReadOnlyList<Cog> ConnectedCogs => connectedCogs;
+
+        /// <summary>
+        /// Retourne le rayon visuel incluant les dents (pour collision et contact)
+        /// </summary>
+        public float GetToothRadius()
+        {
+            // Même calcul que pour un Small cog
+            float spriteBaseToothHeight = 8f / 64f; // 0.125 unités
+            float visualBaseRadius = ENGINE_RADIUS * 1.4f; // baseRadiusRatio = 0.7
+            return visualBaseRadius + (spriteBaseToothHeight * ENGINE_SPRITE_SCALE);
+        }
 
         private void Update()
         {

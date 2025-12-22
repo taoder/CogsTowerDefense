@@ -50,10 +50,20 @@ namespace CogsTowerDefense.Cogs
             {
                 visualTransform = transform;
             }
+
+            // Ajoute un CircleCollider2D pour les collisions physiques
+            // Utilise le rayon incluant les dents
+            CircleCollider2D collider = GetComponent<CircleCollider2D>();
+            if (collider == null)
+            {
+                collider = gameObject.AddComponent<CircleCollider2D>();
+            }
+            collider.radius = GetToothRadius();
+            collider.isTrigger = true; // Pas de physique, juste détection
         }
 
         /// <summary>
-        /// Retourne le rayon du rouage en fonction de sa taille
+        /// Retourne le rayon du rouage en fonction de sa taille (rayon logique)
         /// </summary>
         public float GetRadius()
         {
@@ -63,6 +73,38 @@ namespace CogsTowerDefense.Cogs
                 CogSize.Medium => MEDIUM_RADIUS,
                 CogSize.Large => LARGE_RADIUS,
                 _ => SMALL_RADIUS
+            };
+        }
+
+        /// <summary>
+        /// Retourne le rayon visuel incluant les dents (pour collision et contact)
+        /// Les dents ajoutent 8 pixels, ce qui varie selon le scale du sprite
+        /// </summary>
+        public float GetToothRadius()
+        {
+            // Le sprite de base a des dents de 8 pixels avec pixelsPerUnit = 64
+            // Donc hauteur de base = 8/64 = 0.125 unités
+            // Multiplié par le scale selon la taille
+            float spriteBaseToothHeight = 8f / 64f;
+            float scale = GetSpriteScale();
+
+            // Le rayon de base du sprite est Radius * 1.4 (baseRadiusRatio = 0.7, et sprite fait 0.5 en unités de base)
+            // Donc rayon avec dents = rayon de base visuel + hauteur des dents
+            float visualBaseRadius = Radius * 1.4f; // Le sprite a un baseRadiusRatio de 0.7
+            return visualBaseRadius + (spriteBaseToothHeight * scale);
+        }
+
+        /// <summary>
+        /// Retourne le scale du sprite selon la taille
+        /// </summary>
+        private float GetSpriteScale()
+        {
+            return cogSize switch
+            {
+                CogSize.Small => 1.0f,
+                CogSize.Medium => 2.0f,
+                CogSize.Large => 3.6f,
+                _ => 1.0f
             };
         }
 

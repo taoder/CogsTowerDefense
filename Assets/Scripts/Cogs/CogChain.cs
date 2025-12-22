@@ -23,6 +23,7 @@ namespace CogsTowerDefense.Cogs
 
         /// <summary>
         /// Vérifie si deux positions se touchent (distance ≈ rayon1 + rayon2)
+        /// Utilise les rayons avec dents pour un contact réaliste au niveau des crans
         /// </summary>
         private bool AreTouching(Vector2 pos1, float radius1, Vector2 pos2, float radius2)
         {
@@ -35,22 +36,26 @@ namespace CogsTowerDefense.Cogs
 
         /// <summary>
         /// Vérifie si un rouage touche le moteur
+        /// Utilise le rayon avec dents pour contact au niveau des crans
         /// </summary>
         private bool TouchesEngine(Cog cog)
         {
             if (engine == null || cog == null) return false;
 
-            return AreTouching(cog.Position, cog.Radius, engine.Position, engine.Radius);
+            // Utilise les rayons avec dents pour un contact réaliste
+            return AreTouching(cog.Position, cog.GetToothRadius(), engine.Position, engine.GetToothRadius());
         }
 
         /// <summary>
         /// Vérifie si deux rouages se touchent
+        /// Utilise le rayon avec dents pour contact au niveau des crans
         /// </summary>
         private bool TouchesCog(Cog cog1, Cog cog2)
         {
             if (cog1 == null || cog2 == null || cog1 == cog2) return false;
 
-            return AreTouching(cog1.Position, cog1.Radius, cog2.Position, cog2.Radius);
+            // Utilise les rayons avec dents pour un contact réaliste
+            return AreTouching(cog1.Position, cog1.GetToothRadius(), cog2.Position, cog2.GetToothRadius());
         }
 
         /// <summary>
@@ -113,13 +118,15 @@ namespace CogsTowerDefense.Cogs
 
         /// <summary>
         /// Vérifie si un rouage overlap avec un autre (collision)
+        /// Utilise le rayon avec dents pour une détection précise
         /// </summary>
         private bool OverlapsWithAnyCog(Cog newCog)
         {
             foreach (var existingCog in allCogs)
             {
                 float distance = Vector2.Distance(newCog.Position, existingCog.Position);
-                float minDistance = newCog.Radius + existingCog.Radius;
+                // Utilise les rayons avec dents pour une collision précise
+                float minDistance = newCog.GetToothRadius() + existingCog.GetToothRadius();
 
                 // Overlap si la distance est inférieure à la somme des rayons
                 if (distance < minDistance - contactTolerance)
@@ -132,7 +139,7 @@ namespace CogsTowerDefense.Cogs
             if (engine != null)
             {
                 float distance = Vector2.Distance(newCog.Position, engine.Position);
-                float minDistance = newCog.Radius + engine.Radius;
+                float minDistance = newCog.GetToothRadius() + engine.GetToothRadius();
 
                 if (distance < minDistance - contactTolerance)
                 {

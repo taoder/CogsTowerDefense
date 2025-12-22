@@ -124,7 +124,8 @@ namespace CogsTowerDefense.Cogs
             dragStartPos = currentMouseWorldPos;
 
             // Calcule les propriétés du rouage
-            draggedCogRadius = GetRadiusForSize(cogData.Size);
+            // Utilise le rayon avec dents pour le preview
+            draggedCogRadius = GetToothRadiusForSize(cogData.Size);
             draggedCogPowerRequired = cogData.GetPowerRequired(1);
 
             // Crée le preview visuel (optionnel, on peut juste utiliser le cercle)
@@ -156,7 +157,8 @@ namespace CogsTowerDefense.Cogs
                 }
 
                 // Propriétés du rouage
-                draggedCogRadius = draggedExistingCog.Radius;
+                // Utilise le rayon avec dents pour le preview
+                draggedCogRadius = draggedExistingCog.GetToothRadius();
                 draggedCogPowerRequired = draggedExistingCog.PowerRequired;
 
                 CreatePreviewCircle();
@@ -167,7 +169,7 @@ namespace CogsTowerDefense.Cogs
 
         /// <summary>
         /// Trouve le rouage à une position donnée
-        /// Inclut la zone des dents dans la détection
+        /// Utilise le rayon avec dents pour une détection précise
         /// </summary>
         private Cog GetCogAtPosition(Vector2 position)
         {
@@ -177,9 +179,8 @@ namespace CogsTowerDefense.Cogs
             foreach (var cog in allCogs)
             {
                 float distance = Vector2.Distance(position, cog.Position);
-                // Ajoute une marge pour inclure les dents (environ +0.125 unités)
-                // Les dents ajoutent 8 pixels et avec scale variable, ça fait environ +15% au rayon
-                float clickRadius = cog.Radius * 1.2f;
+                // Utilise le rayon avec dents pour cliquer sur toute la roue
+                float clickRadius = cog.GetToothRadius();
                 if (distance <= clickRadius)
                 {
                     return cog;
@@ -389,6 +390,25 @@ namespace CogsTowerDefense.Cogs
         }
 
         /// <summary>
+        /// Retourne le rayon avec dents pour une taille de rouage
+        /// </summary>
+        private float GetToothRadiusForSize(CogSize size)
+        {
+            float baseRadius = GetRadiusForSize(size);
+            float scale = size switch
+            {
+                CogSize.Small => 1.0f,
+                CogSize.Medium => 2.0f,
+                CogSize.Large => 3.6f,
+                _ => 1.0f
+            };
+
+            float spriteBaseToothHeight = 8f / 64f; // 0.125 unités
+            float visualBaseRadius = baseRadius * 1.4f; // baseRadiusRatio = 0.7
+            return visualBaseRadius + (spriteBaseToothHeight * scale);
+        }
+
+        /// <summary>
         /// Tente de supprimer le rouage sous la souris
         /// </summary>
         private void TryDeleteCogAtMouse()
@@ -457,7 +477,7 @@ namespace CogsTowerDefense.Cogs
             else if (cogToDelete != null && deleteHighlight != null)
             {
                 // Met à jour le highlight existant
-                UpdateDeleteHighlightCircle(cogToDelete.Position, cogToDelete.Radius);
+                UpdateDeleteHighlightCircle(cogToDelete.Position, cogToDelete.GetToothRadius());
             }
         }
 
@@ -477,7 +497,7 @@ namespace CogsTowerDefense.Cogs
             deleteHighlight.material = new Material(Shader.Find("Sprites/Default"));
             deleteHighlight.sortingOrder = 99;
 
-            UpdateDeleteHighlightCircle(cog.Position, cog.Radius);
+            UpdateDeleteHighlightCircle(cog.Position, cog.GetToothRadius());
         }
 
         /// <summary>
