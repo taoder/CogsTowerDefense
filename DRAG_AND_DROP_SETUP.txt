@@ -66,9 +66,15 @@ Le système de drag & drop est maintenant prêt ! Voici comment le configurer da
   - Cliquer gauche pour placer à la nouvelle position (si valide)
   - Clic droit pour annuler et revenir à la position d'origine
 
+✓ Suppression de rouages :
+  - Survoler un rouage avec la souris (highlight orange apparaît)
+  - Appuyer sur DELETE ou BACKSPACE pour supprimer
+  - Le rouage est immédiatement retiré et la puissance libérée
+
 ✓ Validation en temps réel :
   - Cercle VERT : placement valide (touche moteur/rouage, pas de collision, puissance suffisante)
   - Cercle ROUGE : placement invalide
+  - Cercle ORANGE : rouage survolé, prêt à être supprimé (DELETE/BACKSPACE)
 
 ## 5. RÈGLES DE PLACEMENT
 

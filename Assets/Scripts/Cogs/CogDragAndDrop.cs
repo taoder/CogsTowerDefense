@@ -19,6 +19,7 @@ namespace CogsTowerDefense.Cogs
         [Header("Visual Feedback")]
         [SerializeField] private Color validPlacementColor = new Color(0f, 1f, 0f, 0.5f);
         [SerializeField] private Color invalidPlacementColor = new Color(1f, 0f, 0f, 0.5f);
+        [SerializeField] private Color deleteHighlightColor = new Color(1f, 0.5f, 0f, 0.7f); // Orange pour suppression
 
         // État du drag
         private enum DragState { None, NewCog, ExistingCog }
@@ -39,6 +40,10 @@ namespace CogsTowerDefense.Cogs
         private Vector2 currentMouseWorldPos;
         private Vector2 dragStartPos;
         private bool canPlace = false;
+
+        // Pour la suppression
+        private Cog cogToDelete;
+        private LineRenderer deleteHighlight;
 
         private void Awake()
         {
@@ -83,6 +88,17 @@ namespace CogsTowerDefense.Cogs
                 {
                     TryStartDragExistingCog();
                 }
+
+                // Suppression avec touche Delete ou Backspace
+                if (Keyboard.current != null &&
+                    (Keyboard.current.deleteKey.wasPressedThisFrame ||
+                     Keyboard.current.backspaceKey.wasPressedThisFrame))
+                {
+                    TryDeleteCogAtMouse();
+                }
+
+                // Highlight du rouage sous la souris pour suppression
+                UpdateDeleteHighlight();
             }
         }
 
@@ -291,6 +307,9 @@ namespace CogsTowerDefense.Cogs
                 Destroy(draggedCogPreview);
                 draggedCogPreview = null;
             }
+
+            // Nettoie aussi le highlight de suppression
+            CleanupDeleteHighlight();
         }
 
         /// <summary>
@@ -363,6 +382,138 @@ namespace CogsTowerDefense.Cogs
                 CogSize.Large => 1.8f,
                 _ => 0.5f
             };
+        }
+
+        /// <summary>
+        /// Tente de supprimer le rouage sous la souris
+        /// </summary>
+        private void TryDeleteCogAtMouse()
+        {
+            if (currentDragState != DragState.None) return; // Pas pendant un drag
+
+            Cog cogUnderMouse = GetCogAtPosition(currentMouseWorldPos);
+
+            if (cogUnderMouse != null)
+            {
+                DeleteCog(cogUnderMouse);
+            }
+        }
+
+        /// <summary>
+        /// Supprime un rouage
+        /// </summary>
+        private void DeleteCog(Cog cog)
+        {
+            if (cog == null) return;
+
+            // Désenregistre du cogChain
+            if (cogChain != null)
+            {
+                cogChain.UnregisterCog(cog);
+            }
+
+            // TODO: Rembourser une partie de l'or
+
+            Debug.Log($"Deleted cog at {cog.Position}");
+
+            // Nettoie le highlight si c'était ce rouage
+            if (cogToDelete == cog)
+            {
+                CleanupDeleteHighlight();
+            }
+
+            Destroy(cog.gameObject);
+        }
+
+        /// <summary>
+        /// Met à jour le highlight de suppression
+        /// </summary>
+        private void UpdateDeleteHighlight()
+        {
+            if (currentDragState != DragState.None)
+            {
+                CleanupDeleteHighlight();
+                return;
+            }
+
+            // Trouve le rouage sous la souris
+            Cog cogUnderMouse = GetCogAtPosition(currentMouseWorldPos);
+
+            if (cogUnderMouse != cogToDelete)
+            {
+                // Le rouage a changé
+                CleanupDeleteHighlight();
+                cogToDelete = cogUnderMouse;
+
+                if (cogToDelete != null)
+                {
+                    CreateDeleteHighlight(cogToDelete);
+                }
+            }
+            else if (cogToDelete != null && deleteHighlight != null)
+            {
+                // Met à jour le highlight existant
+                UpdateDeleteHighlightCircle(cogToDelete.Position, cogToDelete.Radius);
+            }
+        }
+
+        /// <summary>
+        /// Crée le highlight de suppression
+        /// </summary>
+        private void CreateDeleteHighlight(Cog cog)
+        {
+            GameObject highlightObj = new GameObject("DeleteHighlight");
+            highlightObj.transform.SetParent(transform);
+
+            deleteHighlight = highlightObj.AddComponent<LineRenderer>();
+            deleteHighlight.useWorldSpace = true;
+            deleteHighlight.loop = true;
+            deleteHighlight.widthMultiplier = 0.08f; // Plus épais que le preview de drag
+            deleteHighlight.positionCount = 64;
+            deleteHighlight.material = new Material(Shader.Find("Sprites/Default"));
+            deleteHighlight.sortingOrder = 99;
+
+            UpdateDeleteHighlightCircle(cog.Position, cog.Radius);
+        }
+
+        /// <summary>
+        /// Met à jour le cercle de highlight de suppression
+        /// </summary>
+        private void UpdateDeleteHighlightCircle(Vector2 position, float radius)
+        {
+            if (deleteHighlight == null) return;
+
+            // Couleur orange
+            deleteHighlight.startColor = deleteHighlightColor;
+            deleteHighlight.endColor = deleteHighlightColor;
+
+            // Met à jour les positions
+            int segments = deleteHighlight.positionCount;
+            for (int i = 0; i < segments; i++)
+            {
+                float angle = (float)i / segments * 2f * Mathf.PI;
+                Vector3 pos = new Vector3(
+                    position.x + Mathf.Cos(angle) * radius,
+                    position.y + Mathf.Sin(angle) * radius,
+                    0f
+                );
+                deleteHighlight.SetPosition(i, pos);
+            }
+
+            deleteHighlight.enabled = true;
+        }
+
+        /// <summary>
+        /// Nettoie le highlight de suppression
+        /// </summary>
+        private void CleanupDeleteHighlight()
+        {
+            if (deleteHighlight != null)
+            {
+                Destroy(deleteHighlight.gameObject);
+                deleteHighlight = null;
+            }
+            cogToDelete = null;
         }
 
         /// <summary>
