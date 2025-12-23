@@ -562,6 +562,7 @@ GameObject:
   - component: {fileID: 8888888892}
   - component: {fileID: 8888888891}
   - component: {fileID: 8888888890}
+  - component: {fileID: 8888888897}
   m_Layer: 5
   m_Name: SmallCogButton
   m_TagString: Untagged
@@ -634,6 +635,20 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &8888888897
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8888888888}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  storageZone: {fileID: 1111111113}
+  cogData: {fileID: 11400000, guid: 1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d, type: 2}
 --- !u!114 &8888888891
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -819,6 +834,7 @@ GameObject:
   - component: {fileID: 9999999993}
   - component: {fileID: 9999999992}
   - component: {fileID: 9999999991}
+  - component: {fileID: 9999999998}
   m_Layer: 5
   m_Name: MediumCogButton
   m_TagString: Untagged
@@ -891,6 +907,20 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &9999999998
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9999999989}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  storageZone: {fileID: 1111111113}
+  cogData: {fileID: 11400000, guid: 2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e, type: 2}
 --- !u!114 &9999999992
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1148,6 +1178,20 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &1010101019
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1010101010}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  storageZone: {fileID: 1111111113}
+  cogData: {fileID: 11400000, guid: 3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f, type: 2}
 --- !u!114 &1010101013
 MonoBehaviour:
   m_ObjectHideFlags: 0
